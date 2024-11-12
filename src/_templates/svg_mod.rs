@@ -1,4 +1,4 @@
-use crate::models::IsMahjongTile;
+use crate::models::IsTile;
 
 {{MODULES}}
 
@@ -18,13 +18,13 @@ impl SvgStyle {
 }
 
 /// Trait for tiles that have SVG data.
-pub trait HasSvgData: IsMahjongTile {
+pub trait HasSvgData: IsTile {
     /// Get the SVG data for this tile.
     fn svg_data(&self, style: SvgStyle) -> Option<&'static str>;
 }
 
-/// Add method to retrieve SVG data to all structs that implement [`IsMahjongTile`].
-impl<T> HasSvgData for T where T: IsMahjongTile {
+/// Add method to retrieve SVG data to all structs that implement [`IsTile`].
+impl<T> HasSvgData for T where T: IsTile {
     /// Get the SVG data for this tile.
     fn svg_data(&self, style: SvgStyle) -> Option<&'static str> {
         style.get_svg_by_name(&self.svg_name())

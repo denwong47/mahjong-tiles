@@ -2,7 +2,7 @@ use super::{FlowerCategory, HasChineseValue, HonourCategory, TileCategory};
 
 /// A single Mahjong tile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum MahjongTile {
+pub enum Tile {
     /// The East wind.
     EAST,
     /// The South wind.
@@ -45,7 +45,7 @@ pub enum MahjongTile {
     WINTER,
 }
 
-impl PartialOrd for MahjongTile {
+impl PartialOrd for Tile {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         if self.category() == other.category() && !self.is_honour() {
             if let (Some(v1), Some(v2)) = (self.value(), other.value()) {
@@ -59,13 +59,13 @@ impl PartialOrd for MahjongTile {
     }
 }
 
-impl MahjongTile {
+impl Tile {
     /// Create a new Mahjong tile with a value.
     pub fn new_valued(category: TileCategory, value: u8) -> Self {
         match category {
-            TileCategory::TONG => MahjongTile::TONG(value),
-            TileCategory::WAN => MahjongTile::WAN(value),
-            TileCategory::TIAO => MahjongTile::TIAO(value),
+            TileCategory::TONG => Tile::TONG(value),
+            TileCategory::WAN => Tile::WAN(value),
+            TileCategory::TIAO => Tile::TIAO(value),
             _ => unreachable!("Unreachable: Cannot create a non-number tile with a value"),
         }
     }
@@ -73,36 +73,40 @@ impl MahjongTile {
     /// Returns the chinese name for the tile.
     pub fn chinese_name(&self) -> String {
         match self {
-            MahjongTile::EAST => "东".to_string(),
-            MahjongTile::SOUTH => "南".to_string(),
-            MahjongTile::WEST => "西".to_string(),
-            MahjongTile::NORTH => "北".to_string(),
-            MahjongTile::CENTRAL => "中".to_string(),
-            MahjongTile::PROSPERITY => "发".to_string(),
-            MahjongTile::BLANK => "白".to_string(),
-            MahjongTile::TIAO(v) | MahjongTile::TONG(v) | MahjongTile::WAN(v) => {
+            Tile::EAST => "东".to_string(),
+            Tile::SOUTH => "南".to_string(),
+            Tile::WEST => "西".to_string(),
+            Tile::NORTH => "北".to_string(),
+            Tile::CENTRAL => "中".to_string(),
+            Tile::PROSPERITY => "发".to_string(),
+            Tile::BLANK => "白".to_string(),
+            Tile::TIAO(v) | Tile::TONG(v) | Tile::WAN(v) => {
                 let category_name = self.category().category_name_chinese();
                 let chinese_value = v.chinese_value();
                 format!("{}{}", chinese_value, category_name)
             }
-            MahjongTile::PLUM => "梅".to_string(),
-            MahjongTile::ORCHID => "兰".to_string(),
-            MahjongTile::CHRYSANTHEMUM => "菊".to_string(),
-            MahjongTile::BAMBOO => "竹".to_string(),
-            MahjongTile::SPRING => "春".to_string(),
-            MahjongTile::SUMMER => "夏".to_string(),
-            MahjongTile::AUTUMN => "秋".to_string(),
-            MahjongTile::WINTER => "冬".to_string(),
+            Tile::PLUM => "梅".to_string(),
+            Tile::ORCHID => "兰".to_string(),
+            Tile::CHRYSANTHEMUM => "菊".to_string(),
+            Tile::BAMBOO => "竹".to_string(),
+            Tile::SPRING => "春".to_string(),
+            Tile::SUMMER => "夏".to_string(),
+            Tile::AUTUMN => "秋".to_string(),
+            Tile::WINTER => "冬".to_string(),
         }
     }
 }
 
 /// A trait for Mahjong tiles.
-pub trait IsMahjongTile: PartialOrd + Eq + std::fmt::Debug {
+pub trait IsTile: PartialOrd + Eq + std::fmt::Debug {
     /// Returns the category of the tile.
     fn category(&self) -> TileCategory;
     /// Returns the value of the tile, if it has one.
     fn value(&self) -> Option<u8>;
+
+    /// Returns the direction of the tile, if it has one.
+    /// This only applies to the Winds, Flowers and Seasons.
+    fn direction(&self) -> Option<u8>;
 
     /// Returns whether the tile is an honour tile.
     fn is_honour(&self) -> bool {
@@ -139,32 +143,40 @@ pub trait IsMahjongTile: PartialOrd + Eq + std::fmt::Debug {
     }
 }
 
-impl IsMahjongTile for MahjongTile {
+impl IsTile for Tile {
     fn category(&self) -> TileCategory {
         match self {
-            MahjongTile::EAST | MahjongTile::SOUTH | MahjongTile::WEST | MahjongTile::NORTH => {
+            Tile::EAST | Tile::SOUTH | Tile::WEST | Tile::NORTH => {
                 TileCategory::HONOUR(HonourCategory::WIND)
             }
-            MahjongTile::CENTRAL | MahjongTile::PROSPERITY | MahjongTile::BLANK => {
+            Tile::CENTRAL | Tile::PROSPERITY | Tile::BLANK => {
                 TileCategory::HONOUR(HonourCategory::DRAGON)
             }
-            MahjongTile::TONG(_) => TileCategory::TONG,
-            MahjongTile::WAN(_) => TileCategory::WAN,
-            MahjongTile::TIAO(_) => TileCategory::TIAO,
-            MahjongTile::PLUM
-            | MahjongTile::ORCHID
-            | MahjongTile::CHRYSANTHEMUM
-            | MahjongTile::BAMBOO => TileCategory::FLOWER(FlowerCategory::FLOWER),
-            MahjongTile::SPRING
-            | MahjongTile::SUMMER
-            | MahjongTile::AUTUMN
-            | MahjongTile::WINTER => TileCategory::FLOWER(FlowerCategory::SEASON),
+            Tile::TONG(_) => TileCategory::TONG,
+            Tile::WAN(_) => TileCategory::WAN,
+            Tile::TIAO(_) => TileCategory::TIAO,
+            Tile::PLUM | Tile::ORCHID | Tile::CHRYSANTHEMUM | Tile::BAMBOO => {
+                TileCategory::FLOWER(FlowerCategory::FLOWER)
+            }
+            Tile::SPRING | Tile::SUMMER | Tile::AUTUMN | Tile::WINTER => {
+                TileCategory::FLOWER(FlowerCategory::SEASON)
+            }
         }
     }
 
     fn value(&self) -> Option<u8> {
         match self {
-            MahjongTile::TONG(v) | MahjongTile::WAN(v) | MahjongTile::TIAO(v) => Some(*v),
+            Tile::TONG(v) | Tile::WAN(v) | Tile::TIAO(v) => Some(*v),
+            _ => None,
+        }
+    }
+
+    fn direction(&self) -> Option<u8> {
+        match self {
+            Tile::EAST | Tile::SPRING | Tile::PLUM => Some(1),
+            Tile::SOUTH | Tile::SUMMER | Tile::ORCHID => Some(2),
+            Tile::WEST | Tile::AUTUMN | Tile::CHRYSANTHEMUM => Some(3),
+            Tile::NORTH | Tile::WINTER | Tile::BAMBOO => Some(4),
             _ => None,
         }
     }
@@ -191,34 +203,14 @@ mod test_eq {
         };
     }
 
-    create_test!(east_east, MahjongTile::EAST, MahjongTile::EAST, true);
-    create_test!(east_south, MahjongTile::EAST, MahjongTile::SOUTH, false);
-    create_test!(east_tong1, MahjongTile::EAST, MahjongTile::TONG(1), false);
-    create_test!(
-        tong1_tong1,
-        MahjongTile::TONG(1),
-        MahjongTile::TONG(1),
-        true
-    );
-    create_test!(
-        tong1_tong2,
-        MahjongTile::TONG(1),
-        MahjongTile::TONG(2),
-        false
-    );
-    create_test!(tong1_wan1, MahjongTile::TONG(1), MahjongTile::WAN(1), false);
-    create_test!(
-        tong1_central,
-        MahjongTile::TONG(1),
-        MahjongTile::CENTRAL,
-        false
-    );
-    create_test!(
-        tong1_tiao1,
-        MahjongTile::TONG(1),
-        MahjongTile::TIAO(1),
-        false
-    );
+    create_test!(east_east, Tile::EAST, Tile::EAST, true);
+    create_test!(east_south, Tile::EAST, Tile::SOUTH, false);
+    create_test!(east_tong1, Tile::EAST, Tile::TONG(1), false);
+    create_test!(tong1_tong1, Tile::TONG(1), Tile::TONG(1), true);
+    create_test!(tong1_tong2, Tile::TONG(1), Tile::TONG(2), false);
+    create_test!(tong1_wan1, Tile::TONG(1), Tile::WAN(1), false);
+    create_test!(tong1_central, Tile::TONG(1), Tile::CENTRAL, false);
+    create_test!(tong1_tiao1, Tile::TONG(1), Tile::TIAO(1), false);
 }
 
 #[cfg(test)]
@@ -245,133 +237,61 @@ mod test_ord {
         };
     }
 
-    create_test!(east_cmp_east, MahjongTile::EAST, MahjongTile::EAST, None);
-    create_test!(east_cmp_south, MahjongTile::EAST, MahjongTile::SOUTH, None);
-    create_test!(east_lt_east, MahjongTile::EAST < MahjongTile::EAST, false);
+    create_test!(east_cmp_east, Tile::EAST, Tile::EAST, None);
+    create_test!(east_cmp_south, Tile::EAST, Tile::SOUTH, None);
+    create_test!(east_lt_east, Tile::EAST < Tile::EAST, false);
 
-    create_test!(east_le_east, MahjongTile::EAST <= MahjongTile::EAST, false);
-    create_test!(east_gt_east, MahjongTile::EAST > MahjongTile::EAST, false);
-    create_test!(east_ge_east, MahjongTile::EAST >= MahjongTile::EAST, false);
-    create_test!(east_lt_south, MahjongTile::EAST < MahjongTile::SOUTH, false);
-    create_test!(
-        east_lt_central,
-        MahjongTile::EAST < MahjongTile::CENTRAL,
-        false
-    );
-    create_test!(
-        east_lt_tong1,
-        MahjongTile::EAST < MahjongTile::TONG(1),
-        false
-    );
-    create_test!(east_lt_wan1, MahjongTile::EAST < MahjongTile::WAN(1), false);
-    create_test!(
-        east_lt_tiao1,
-        MahjongTile::EAST < MahjongTile::TIAO(1),
-        false
-    );
-    create_test!(
-        central_cmp_central,
-        MahjongTile::CENTRAL,
-        MahjongTile::CENTRAL,
-        None
-    );
-    create_test!(
-        central_lt_central,
-        MahjongTile::CENTRAL < MahjongTile::CENTRAL,
-        false
-    );
+    create_test!(east_le_east, Tile::EAST <= Tile::EAST, false);
+    create_test!(east_gt_east, Tile::EAST > Tile::EAST, false);
+    create_test!(east_ge_east, Tile::EAST >= Tile::EAST, false);
+    create_test!(east_lt_south, Tile::EAST < Tile::SOUTH, false);
+    create_test!(east_lt_central, Tile::EAST < Tile::CENTRAL, false);
+    create_test!(east_lt_tong1, Tile::EAST < Tile::TONG(1), false);
+    create_test!(east_lt_wan1, Tile::EAST < Tile::WAN(1), false);
+    create_test!(east_lt_tiao1, Tile::EAST < Tile::TIAO(1), false);
+    create_test!(central_cmp_central, Tile::CENTRAL, Tile::CENTRAL, None);
+    create_test!(central_lt_central, Tile::CENTRAL < Tile::CENTRAL, false);
     create_test!(
         central_cmp_prosperity,
-        MahjongTile::CENTRAL,
-        MahjongTile::PROSPERITY,
+        Tile::CENTRAL,
+        Tile::PROSPERITY,
         None
     );
     create_test!(
         central_lt_prosperity,
-        MahjongTile::CENTRAL < MahjongTile::PROSPERITY,
+        Tile::CENTRAL < Tile::PROSPERITY,
         false
     );
     create_test!(
         tong1_cmp_tong1,
-        MahjongTile::TONG(1),
-        MahjongTile::TONG(1),
+        Tile::TONG(1),
+        Tile::TONG(1),
         Some(Ordering::Equal)
     );
-    create_test!(
-        tong1_lt_tong1,
-        MahjongTile::TONG(1) < MahjongTile::TONG(1),
-        false
-    );
-    create_test!(
-        tong1_le_tong1,
-        MahjongTile::TONG(1) <= MahjongTile::TONG(1),
-        true
-    );
+    create_test!(tong1_lt_tong1, Tile::TONG(1) < Tile::TONG(1), false);
+    create_test!(tong1_le_tong1, Tile::TONG(1) <= Tile::TONG(1), true);
     create_test!(
         tong1_cmp_tong2,
-        MahjongTile::TONG(1),
-        MahjongTile::TONG(2),
+        Tile::TONG(1),
+        Tile::TONG(2),
         Some(Ordering::Less)
     );
-    create_test!(
-        tong1_lt_tong2,
-        MahjongTile::TONG(1) < MahjongTile::TONG(2),
-        true
-    );
-    create_test!(
-        tong1_cmp_wan1,
-        MahjongTile::TONG(1),
-        MahjongTile::WAN(1),
-        None
-    );
-    create_test!(
-        tong1_lt_wan1,
-        MahjongTile::TONG(1) < MahjongTile::WAN(1),
-        false
-    );
-    create_test!(
-        tong1_cmp_central,
-        MahjongTile::TONG(1),
-        MahjongTile::CENTRAL,
-        None
-    );
-    create_test!(
-        tong1_lt_central,
-        MahjongTile::TONG(1) < MahjongTile::CENTRAL,
-        false
-    );
-    create_test!(
-        tong1_cmp_tiao1,
-        MahjongTile::TONG(1),
-        MahjongTile::TIAO(1),
-        None
-    );
-    create_test!(
-        tong1_lt_tiao1,
-        MahjongTile::TONG(1) < MahjongTile::TIAO(1),
-        false
-    );
+    create_test!(tong1_lt_tong2, Tile::TONG(1) < Tile::TONG(2), true);
+    create_test!(tong1_cmp_wan1, Tile::TONG(1), Tile::WAN(1), None);
+    create_test!(tong1_lt_wan1, Tile::TONG(1) < Tile::WAN(1), false);
+    create_test!(tong1_cmp_central, Tile::TONG(1), Tile::CENTRAL, None);
+    create_test!(tong1_lt_central, Tile::TONG(1) < Tile::CENTRAL, false);
+    create_test!(tong1_cmp_tiao1, Tile::TONG(1), Tile::TIAO(1), None);
+    create_test!(tong1_lt_tiao1, Tile::TONG(1) < Tile::TIAO(1), false);
     create_test!(
         tong9_cmp_tong1,
-        MahjongTile::TONG(9),
-        MahjongTile::TONG(1),
+        Tile::TONG(9),
+        Tile::TONG(1),
         Some(Ordering::Greater)
     );
-    create_test!(
-        tong9_lt_tong1,
-        MahjongTile::TONG(9) < MahjongTile::TONG(1),
-        false
-    );
-    create_test!(
-        tong9_ge_tong1,
-        MahjongTile::TONG(9) >= MahjongTile::TONG(1),
-        true
-    );
-    create_test!(
-        tong9_ge_wan1,
-        MahjongTile::TONG(9) >= MahjongTile::WAN(1),
-        false
-    );
+    create_test!(tong9_lt_tong1, Tile::TONG(9) < Tile::TONG(1), false);
+    create_test!(tong9_ge_tong1, Tile::TONG(9) >= Tile::TONG(1), true);
+    create_test!(tong9_ge_wan1, Tile::TONG(9) >= Tile::WAN(1), false);
 }
 
 #[cfg(test)]
@@ -387,58 +307,38 @@ mod test_metadata {
         };
     }
 
-    create_test!(blank_svg_name, MahjongTile::BLANK, svg_name, "honour-blank");
+    create_test!(blank_svg_name, Tile::BLANK, svg_name, "honour-blank");
     create_test!(
         central_category,
-        MahjongTile::CENTRAL,
+        Tile::CENTRAL,
         category,
         TileCategory::HONOUR(HonourCategory::DRAGON)
     );
-    create_test!(
-        central_svg_name,
-        MahjongTile::CENTRAL,
-        svg_name,
-        "honour-central"
-    );
-    create_test!(central_value, MahjongTile::CENTRAL, value, None);
+    create_test!(central_svg_name, Tile::CENTRAL, svg_name, "honour-central");
+    create_test!(central_value, Tile::CENTRAL, value, None);
     create_test!(
         east_category,
-        MahjongTile::EAST,
+        Tile::EAST,
         category,
         TileCategory::HONOUR(HonourCategory::WIND)
     );
-    create_test!(east_svg_name, MahjongTile::EAST, svg_name, "honour-east");
-    create_test!(east_value, MahjongTile::EAST, value, None);
+    create_test!(east_svg_name, Tile::EAST, svg_name, "honour-east");
+    create_test!(east_value, Tile::EAST, value, None);
     create_test!(
         prosperity_svg_name,
-        MahjongTile::PROSPERITY,
+        Tile::PROSPERITY,
         svg_name,
         "honour-prosperity"
     );
-    create_test!(
-        tiao5_category,
-        MahjongTile::TIAO(5),
-        category,
-        TileCategory::TIAO
-    );
-    create_test!(tiao5_svg_name, MahjongTile::TIAO(5), svg_name, "tiao-5");
-    create_test!(tiao5_value, MahjongTile::TIAO(5), value, Some(5));
-    create_test!(
-        tong1_category,
-        MahjongTile::TONG(1),
-        category,
-        TileCategory::TONG
-    );
-    create_test!(tong1_svg_name, MahjongTile::TONG(1), svg_name, "tong-1");
-    create_test!(tong1_value, MahjongTile::TONG(1), value, Some(1));
-    create_test!(
-        wan9_category,
-        MahjongTile::WAN(9),
-        category,
-        TileCategory::WAN
-    );
-    create_test!(wan9_svg_name, MahjongTile::WAN(9), svg_name, "wan-9");
-    create_test!(wan9_value, MahjongTile::WAN(9), value, Some(9));
+    create_test!(tiao5_category, Tile::TIAO(5), category, TileCategory::TIAO);
+    create_test!(tiao5_svg_name, Tile::TIAO(5), svg_name, "tiao-5");
+    create_test!(tiao5_value, Tile::TIAO(5), value, Some(5));
+    create_test!(tong1_category, Tile::TONG(1), category, TileCategory::TONG);
+    create_test!(tong1_svg_name, Tile::TONG(1), svg_name, "tong-1");
+    create_test!(tong1_value, Tile::TONG(1), value, Some(1));
+    create_test!(wan9_category, Tile::WAN(9), category, TileCategory::WAN);
+    create_test!(wan9_svg_name, Tile::WAN(9), svg_name, "wan-9");
+    create_test!(wan9_value, Tile::WAN(9), value, Some(9));
 }
 
 #[cfg(test)]
@@ -453,15 +353,15 @@ mod test_chinese_names {
         };
     }
 
-    create_test!(blank_chinese_name, MahjongTile::BLANK, "白");
-    create_test!(central_chinese_name, MahjongTile::CENTRAL, "中");
-    create_test!(east_chinese_name, MahjongTile::EAST, "东");
-    create_test!(prosperity_chinese_name, MahjongTile::PROSPERITY, "发");
-    create_test!(tiao5_chinese_name, MahjongTile::TIAO(5), "五条");
-    create_test!(tong1_chinese_name, MahjongTile::TONG(1), "一筒");
-    create_test!(wan9_chinese_name, MahjongTile::WAN(9), "九万");
-    create_test!(orchid_chinese_name, MahjongTile::ORCHID, "兰");
-    create_test!(plum_chinese_name, MahjongTile::PLUM, "梅");
-    create_test!(chrysanthemum_chinese_name, MahjongTile::CHRYSANTHEMUM, "菊");
-    create_test!(bamboo_chinese_name, MahjongTile::BAMBOO, "竹");
+    create_test!(blank_chinese_name, Tile::BLANK, "白");
+    create_test!(central_chinese_name, Tile::CENTRAL, "中");
+    create_test!(east_chinese_name, Tile::EAST, "东");
+    create_test!(prosperity_chinese_name, Tile::PROSPERITY, "发");
+    create_test!(tiao5_chinese_name, Tile::TIAO(5), "五条");
+    create_test!(tong1_chinese_name, Tile::TONG(1), "一筒");
+    create_test!(wan9_chinese_name, Tile::WAN(9), "九万");
+    create_test!(orchid_chinese_name, Tile::ORCHID, "兰");
+    create_test!(plum_chinese_name, Tile::PLUM, "梅");
+    create_test!(chrysanthemum_chinese_name, Tile::CHRYSANTHEMUM, "菊");
+    create_test!(bamboo_chinese_name, Tile::BAMBOO, "竹");
 }

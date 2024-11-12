@@ -11,7 +11,7 @@ This repository contains vector graphics and PNG exports of riichi mahjong tiles
 The Mahjong tiles are exposed as the struct `MahjongTile` in the `mahjong` module:
 
 ```rust
-use mahjong::{MahjongTile, TileCategory, IsMahjongTile, HonourCategory, HasSvgData, SvgStyle};
+use mahjong_tiles::{MahjongTile, TileCategory, IsMahjongTile, HonourCategory, HasSvgData, SvgStyle};
 
 let tile = MahjongTile::TONG(1);
 
@@ -20,7 +20,7 @@ assert_eq!(tile.value(), Some(1));
 assert_eq!(tile.chinese_name(), "一筒");
 assert_eq!(tile + 1, Some(MahjongTile::TONG(2)));
 
-let svg = tile.svg_data(mahjong::SvgStyle::DARK).unwrap();
+let svg = tile.svg_data(mahjong_tiles::SvgStyle::DARK).unwrap();
 assert!(svg.starts_with("data:image/svg+xml;base64,"));
 
 let tile = MahjongTile::WAN(9);
