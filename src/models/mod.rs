@@ -5,6 +5,8 @@ mod arithmetic;
 mod category;
 pub use category::*;
 
+mod hash;
+
 /// Re-export [`HasSvgData`] trait for use in other modules.
 pub use crate::svg::HasSvgData;
 

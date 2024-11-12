@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mahjong"
+name = "mahjong_tiles"
 version = "0.1.0"
 dependencies = [
  "base64",
