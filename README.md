@@ -1,4 +1,7 @@
 # Rust Structs for Mahjong Tiles with SVG graphics
+
+![Rust CI](https://github.com/denwong47/mahjong-tiles/actions/workflows/rust-CI.yml/badge.svg?branch=main)
+
 This repository contains vector graphics and PNG exports of riichi mahjong tiles. The tiles are available in the regular and black variants. Below are example screenshots of the tiles.
 
 <div style="text-align:center">
