@@ -32,3 +32,6 @@ mod svg;
 
 pub use models::*;
 pub use svg::SvgStyle;
+
+#[doc(hidden)]
+pub mod validator;
