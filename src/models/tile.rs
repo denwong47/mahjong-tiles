@@ -69,36 +69,13 @@ impl Tile {
             _ => unreachable!("Unreachable: Cannot create a non-number tile with a value"),
         }
     }
-
-    /// Returns the chinese name for the tile.
-    pub fn chinese_name(&self) -> String {
-        match self {
-            Tile::EAST => "东".to_string(),
-            Tile::SOUTH => "南".to_string(),
-            Tile::WEST => "西".to_string(),
-            Tile::NORTH => "北".to_string(),
-            Tile::CENTRAL => "中".to_string(),
-            Tile::PROSPERITY => "发".to_string(),
-            Tile::BLANK => "白".to_string(),
-            Tile::TIAO(v) | Tile::TONG(v) | Tile::WAN(v) => {
-                let category_name = self.category().category_name_chinese();
-                let chinese_value = v.chinese_value();
-                format!("{}{}", chinese_value, category_name)
-            }
-            Tile::PLUM => "梅".to_string(),
-            Tile::ORCHID => "兰".to_string(),
-            Tile::CHRYSANTHEMUM => "菊".to_string(),
-            Tile::BAMBOO => "竹".to_string(),
-            Tile::SPRING => "春".to_string(),
-            Tile::SUMMER => "夏".to_string(),
-            Tile::AUTUMN => "秋".to_string(),
-            Tile::WINTER => "冬".to_string(),
-        }
-    }
 }
 
 /// A trait for Mahjong tiles.
-pub trait IsTile: PartialOrd + Eq + std::fmt::Debug {
+pub trait IsTile: PartialOrd + Eq + std::fmt::Debug + std::hash::Hash {
+    /// Returns the Chinese name of the tile.
+    fn unique_name(&self) -> String;
+
     /// Returns the category of the tile.
     fn category(&self) -> TileCategory;
     /// Returns the value of the tile, if it has one.
@@ -144,6 +121,32 @@ pub trait IsTile: PartialOrd + Eq + std::fmt::Debug {
 }
 
 impl IsTile for Tile {
+    /// Returns the chinese name for the tile.
+    fn unique_name(&self) -> String {
+        match self {
+            Tile::EAST => "东".to_string(),
+            Tile::SOUTH => "南".to_string(),
+            Tile::WEST => "西".to_string(),
+            Tile::NORTH => "北".to_string(),
+            Tile::CENTRAL => "中".to_string(),
+            Tile::PROSPERITY => "发".to_string(),
+            Tile::BLANK => "白".to_string(),
+            Tile::TIAO(v) | Tile::TONG(v) | Tile::WAN(v) => {
+                let category_name = self.category().category_name_chinese();
+                let chinese_value = v.chinese_value();
+                format!("{}{}", chinese_value, category_name)
+            }
+            Tile::PLUM => "梅".to_string(),
+            Tile::ORCHID => "兰".to_string(),
+            Tile::CHRYSANTHEMUM => "菊".to_string(),
+            Tile::BAMBOO => "竹".to_string(),
+            Tile::SPRING => "春".to_string(),
+            Tile::SUMMER => "夏".to_string(),
+            Tile::AUTUMN => "秋".to_string(),
+            Tile::WINTER => "冬".to_string(),
+        }
+    }
+
     fn category(&self) -> TileCategory {
         match self {
             Tile::EAST | Tile::SOUTH | Tile::WEST | Tile::NORTH => {
@@ -348,7 +351,7 @@ mod test_chinese_names {
         ($name:ident, $tile:expr, $expected:literal) => {
             #[test]
             fn $name() {
-                assert_eq!($tile.chinese_name(), $expected);
+                assert_eq!($tile.unique_name(), $expected);
             }
         };
     }

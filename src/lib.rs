@@ -9,7 +9,7 @@
 //!
 //! assert_eq!(tile.category(), TileCategory::TONG);
 //! assert_eq!(tile.value(), Some(1));
-//! assert_eq!(tile.chinese_name(), "一筒");
+//! assert_eq!(tile.unique_name(), "一筒");
 //! assert_eq!(tile + 1, Some(Tile::TONG(2)));
 //!
 //! let svg = tile.svg_data(mahjong_tiles::SvgStyle::DARK).unwrap();
@@ -19,7 +19,7 @@
 //!
 //! assert_eq!(tile.category(), TileCategory::WAN);
 //! assert_eq!(tile.value(), Some(9));
-//! assert_eq!(tile.chinese_name(), "九万");
+//! assert_eq!(tile.unique_name(), "九万");
 //! assert_eq!(tile - 1, Some(Tile::WAN(8)));
 //!
 //! let tile = Tile::EAST;
