@@ -90,6 +90,14 @@ pub trait IsTile: PartialOrd + Eq + std::fmt::Debug + std::hash::Hash {
         matches!(self.category(), TileCategory::HONOUR(_))
     }
 
+    /// Returns whether the tile is identical to another tile.
+    ///
+    /// This is a reference comparison; different instances of the same tile are not
+    /// considered equal.
+    fn is_identical_to(&self, other: &Self) -> bool {
+        std::ptr::eq(self, other)
+    }
+
     /// Returns whether the tile is a number tile.
     fn is_number(&self) -> bool {
         matches!(
@@ -367,4 +375,25 @@ mod test_chinese_names {
     create_test!(plum_chinese_name, Tile::PLUM, "梅");
     create_test!(chrysanthemum_chinese_name, Tile::CHRYSANTHEMUM, "菊");
     create_test!(bamboo_chinese_name, Tile::BAMBOO, "竹");
+}
+
+#[cfg(test)]
+mod test_identical_to {
+    use super::*;
+
+    fn make_tiles() -> (Tile, Tile) {
+        (Tile::EAST, Tile::EAST)
+    }
+
+    #[test]
+    fn same_tile() {
+        let (tile1, _) = make_tiles();
+        assert!(tile1.is_identical_to(&tile1));
+    }
+
+    #[test]
+    fn different_tile() {
+        let (tile1, tile2) = make_tiles();
+        assert!(!tile1.is_identical_to(&tile2));
+    }
 }
